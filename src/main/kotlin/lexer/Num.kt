@@ -1,7 +1,7 @@
 package bbr.lexer
 
-class Num(val num: Int) : Token(Tag.NUM) {
+class Num(val num: String) : Token(Tag.NUM) {
     override fun toString(): String {
-        return num.toString()
+        return num
     }
 }

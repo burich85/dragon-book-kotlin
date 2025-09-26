@@ -35,7 +35,7 @@ class Lexer {
             }
         }
 
-        if (peek.isDigit())
+        if (peek.isDigit() || peek == '.')
             return buildNumber()
 
         if (peek.isLetter())
@@ -140,12 +140,19 @@ class Lexer {
     }
 
     private fun buildNumber(): Num {
-        var num = 0
+        var dotFound = peek == '.'
+
+        val numBuilder = StringBuilder()
         do {
-            num = 10 * num + peek.digitToInt(10)
+            numBuilder.append(peek)
             peekNext()
+            if (!dotFound && peek == '.') {
+                dotFound = true
+                numBuilder.append(peek)
+                peekNext()
+            }
         } while (peek.isDigit())
-        return Num(num)
+        return Num(numBuilder.toString())
     }
 
     private fun buildOneLineCommentary(): Token {
