@@ -1,5 +1,7 @@
 package bbr.lexer
 
+import bbr.lexer.lexer.Commentary
+
 class Lexer {
     var line: Int = 1
 
@@ -21,38 +23,81 @@ class Lexer {
     }
 
     fun scan(): Token {
-        while (System.`in`.available() > 0) {
-            peekNext()
+        if (peek == ' ') {
+            while (!isEmpty()) {
+                peekNext()
 
-            when (peek) {
-                ' ', '\t' -> continue
-                '\n' -> line++
-                else -> break
+                when (peek) {
+                    ' ', '\t' -> continue
+                    '\n' -> line++
+                    else -> break
+                }
             }
         }
 
-        if (peek.isDigit()) {
-            var num = 0
-            do {
-                num = 10 * num + peek.digitToInt(10)
-                peekNext()
-            } while (peek.isDigit())
-            return Num(num)
-        }
-        if (peek.isLetter()) {
-            val lexemeBuilder = StringBuilder()
-            do {
-                lexemeBuilder.append(peek)
-                peekNext()
-            } while (peek.isLetterOrDigit())
+        if (peek.isDigit())
+            return buildNumber()
 
-            val lexeme = lexemeBuilder.toString()
-            val word = words.getOrPut(lexeme) { Word(Tag.ID, lexeme) }
-            return word
+        if (peek.isLetter())
+            return buildWord()
+
+        if (peek == '/') {
+            val slashToken = buildToken()
+            if (isEmpty()) {
+                peek = ' '
+                return slashToken
+            }
+            peekNext()
+
+            return if (peek == '/')
+                buildOneLineCommentary()
+            else
+                slashToken
         }
-        val token = Token(peek.code)
+
+        val token = buildToken()
         peek = ' '
         return token
+    }
+
+    private fun isEmpty(): Boolean = System.`in`.available() == 0
+
+    private fun buildToken(): Token = Token(peek.code)
+
+    private fun buildWord(): Word {
+        val lexemeBuilder = StringBuilder()
+        do {
+            lexemeBuilder.append(peek)
+            peekNext()
+        } while (peek.isLetterOrDigit())
+
+        val lexeme = lexemeBuilder.toString()
+        val word = words.getOrPut(lexeme) { Word(Tag.ID, lexeme) }
+        return word
+    }
+
+    private fun buildNumber(): Num {
+        var num = 0
+        do {
+            num = 10 * num + peek.digitToInt(10)
+            peekNext()
+        } while (peek.isDigit())
+        return Num(num)
+    }
+
+    private fun buildOneLineCommentary(): Token {
+        val commentaryBuilder = StringBuilder()
+        while (!isEmpty()) {
+            peekNext()
+            if (peek == '\n') {
+                line++
+                break
+            }
+            commentaryBuilder.append(peek)
+        }
+        peek = ' '
+
+        return Commentary(commentaryBuilder.toString())
     }
 
     private fun peekNext() {
