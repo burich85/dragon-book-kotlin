@@ -42,9 +42,6 @@ class Lexer {
             return buildWord()
 
         if (peek == '/') {
-            if (isEmpty()) {
-                return buildTokenAndClean()
-            }
             peekNext()
 
             return when (peek) {
@@ -55,9 +52,6 @@ class Lexer {
         }
 
         if (peek == '<') {
-            if (isEmpty()) {
-                return Comparison(Tag.LT)
-            }
             peekNext()
             if (peek == '=') {
                 clean()
@@ -68,9 +62,6 @@ class Lexer {
         }
 
         if (peek == '>') {
-            if (isEmpty()) {
-                return Comparison(Tag.GT)
-            }
             peekNext()
             if (peek == '=') {
                 clean()
@@ -81,9 +72,6 @@ class Lexer {
         }
 
         if (peek == '!') {
-            if (isEmpty()) {
-                return buildTokenAndClean()
-            }
             peekNext()
             if (peek == '=') {
                 clean()
@@ -94,9 +82,6 @@ class Lexer {
         }
 
         if (peek == '=') {
-            if (isEmpty()) {
-                return buildTokenAndClean()
-            }
             peekNext()
             if (peek == '=') {
                 clean()
