@@ -28,8 +28,7 @@ class Lexer {
                 peekNext()
 
                 when (peek) {
-                    ' ', '\t' -> continue
-                    '\n' -> line++
+                    ' ', '\t', '\n' -> continue
                     else -> break
                 }
             }
@@ -51,6 +50,8 @@ class Lexer {
 
             return if (peek == '/')
                 buildOneLineCommentary()
+            else if (peek == '*')
+                buildMultiLineCommentary()
             else
                 slashToken
         }
@@ -90,7 +91,6 @@ class Lexer {
         while (!isEmpty()) {
             peekNext()
             if (peek == '\n') {
-                line++
                 break
             }
             commentaryBuilder.append(peek)
@@ -100,7 +100,31 @@ class Lexer {
         return Commentary(commentaryBuilder.toString())
     }
 
+    private fun buildMultiLineCommentary(): Token {
+        var prev = ' '
+        val commentaryBuilder = StringBuilder()
+
+        while (!isEmpty()) {
+            peekNext()
+
+            if (prev == '*' && peek == '/') {
+                commentaryBuilder.deleteCharAt(commentaryBuilder.length - 1)
+                break
+            }
+
+            commentaryBuilder.append(peek)
+            prev = peek
+        }
+        peek = ' '
+
+        return Commentary(commentaryBuilder.toString())
+    }
+
     private fun peekNext() {
         peek = System.`in`.read().toChar()
+
+        if (peek == '\n') { //FIXME: potential problem, because it is the next symbol at the moment
+            line++
+        }
     }
 }
